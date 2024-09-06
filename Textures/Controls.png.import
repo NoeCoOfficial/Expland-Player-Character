@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://rhsd3pbxyvi3"
-path.s3tc="res://.godot/imported/Expland_Crosshair.png-f7d4eee073fe9bb7e1dd0c7846c65874.s3tc.ctex"
+uid="uid://c1pgkm5c0hemy"
+path.s3tc="res://.godot/imported/Controls.png-643fd6a11988092daa6a11dbe9a9dacd.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://Textures/Expland_Crosshair.png"
-dest_files=["res://.godot/imported/Expland_Crosshair.png-f7d4eee073fe9bb7e1dd0c7846c65874.s3tc.ctex"]
+source_file="res://Textures/Controls.png"
+dest_files=["res://.godot/imported/Controls.png-643fd6a11988092daa6a11dbe9a9dacd.s3tc.ctex"]
 
 [params]
 
