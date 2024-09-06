@@ -67,7 +67,7 @@ var speed # determines whether the player is pressing shift or not and whether t
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 func _input(_event): # A built-in function that listens for input using the input map
 	if Input.is_action_just_pressed("Quit") and Quit == true:
-		get_tree().quit()
+		get_tree().quit() # quit
 	if Input.is_action_just_pressed("Reset") and Reset == true:
 		if ResetPOS == Vector3(999, 999, 999):
 			self.position = StartPOS
