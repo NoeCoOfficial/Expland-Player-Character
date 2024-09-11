@@ -101,17 +101,17 @@ func _physics_process(delta):
 	var direction = (head.transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 
 	if is_on_floor():
-		if direction != Vector3.ZERO:
+		if direction != Vector3.ZERO: # This is equal to Vector3(0, 0, 0)
 			velocity.x = direction.x * speed
 			velocity.z = direction.z * speed
 		else:
 			velocity.x = lerp(velocity.x, 0.0, delta * 10.0)
 			velocity.z = lerp(velocity.z, 0.0, delta * 10.0)
 	else:
-		velocity.x = lerp(velocity.x, direction.x * speed, delta * 3.0)
+		velocity.x = lerp(velocity.x, direction.x * speed, delta * 3.0) # linear interpolate movement when stopped
 		velocity.z = lerp(velocity.z, direction.z * speed, delta * 3.0)
 
-	move_and_slide()
+	move_and_slide() # pretty self explanatory
 
 	# Check if the player is moving and on the floor
 	var is_moving = velocity.length() > 0.1 and is_on_floor()
@@ -125,20 +125,19 @@ func _physics_process(delta):
 		var target_pos = Vector3(camera.transform.origin.x, 0, camera.transform.origin.z)
 		camera.transform.origin = camera.transform.origin.lerp(target_pos, delta * BOB_SMOOTHING_SPEED)
 
-# The headbob function remains the same
 func _headbob(time) -> Vector3:
 	var pos = Vector3.ZERO
 	pos.y = sin(time * BOB_FREQ) * BOB_AMP
 	return pos
-func _process(_delta):
+func _process(_delta): # called every frame.
 	
-	$Head/Camera3D.fov = FOV
+	$Head/Camera3D.fov = FOV # set FOV to export value
 	
-	$Head/Camera3D/CrosshairCanvas/Crosshair.size = crosshair_size
+	$Head/Camera3D/CrosshairCanvas/Crosshair.size = crosshair_size # set crosshair size the the export value
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-func _ready():
+func _ready(): # called when node enters scene tree, i.e when it has fully loaded
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)  # lock mouse
