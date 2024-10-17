@@ -44,7 +44,7 @@ shadow_enabled = true
 [node name="3DPlayer" parent="." instance=ExtResource("1_6l6pc")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0.141595, -2)
 FOV = 100
-crosshair_size = Vector2(5, 5)
+crosshair_size = Vector2(3, 3)
 
 [node name="Objects" type="Node" parent="."]
 
