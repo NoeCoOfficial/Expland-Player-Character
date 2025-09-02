@@ -13,7 +13,7 @@ config_version=5
 config/name="Expland Player Character"
 config/tags=PackedStringArray("3d", "for_school")
 run/main_scene="res://Scenes and Scripts/world.tscn"
-config/features=PackedStringArray("4.3", "Forward Plus")
+config/features=PackedStringArray("4.5", "Forward Plus")
 config/icon="res://Textures/icon.png"
 
 [display]
