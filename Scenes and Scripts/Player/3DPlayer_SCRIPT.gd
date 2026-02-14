@@ -1,170 +1,240 @@
-@icon("res://Textures/Icons/Script Icons/32x32/character_edit.png") # Give the node an icon (so it looks cool)
-extends CharacterBody3D # Inheritance
+@icon("res://Textures/Icons/Script Icons/32x32/character_edit.png")
+extends CharacterBody3D
 
 
-# Utility variables
-@export_group("Utility") ## A group for gameplay variables
-@export var inventory_opened_in_air := false ## Checks if the inventory UI is opened in the air (so the same velocity can be kept, used in _physics_process()
-@export var speed:float ## The speed of the player. Used in _physics_process, this variable changes to SPRINT_SPEED, CROUCH_SPEED or WALK_SPEED depending on what input is pressed.
-@export var GAME_STATE := "NORMAL" ## The local game state. (Global variable is in PlayerData.gd and saved to a file)
-
-@export_group("Gameplay") ## A group for gameplay variables
-
-@export_subgroup("Health") ## Health varibales subgroup 
-@export var UseHealth := true ## Checks if health should be used. If false no health label/bar will be displayed and the player won't be able to die/take damage)
-@export var MaxHealth := 100 ## After death or when the game is first opened, the Health variable is set to this. 
-@export var Health := 100 ## The player's health. If this reaches 0, the player dies.
-
-@export_subgroup("Other") 
-@export var Position := Vector3(0, 0, 0) ## What the live position for the player is. This no longer does anything if changed in the inspector panel.
-
-@export_group("Spawn") ## A group for spawn variables
-
-@export var StartPOS := Vector3(0, 0, 0) ## This no longer does anything if changed because this is always set to the value from the save file.
-@export var ResetPOS := Vector3(0, 0, 0) ## Where the player goes if the Reset input is pressed. 999, 999, 999 for same as StartPOS. 
-
-@export_subgroup("Fade_In") ## A subgroup for the fade-in variables (on spawn)
-@export var Fade_In := false ## Whether to use the fade-in on startup or not. Reccomended to keep this on because it looks cool. 
-@export var Fade_In_Time := 1.000 ## The time it takes for the overlay to reach Color(0, 0, 0, 0) in seconds. 
-
-@export_group("Input") ## A group relating to inputs (keys on your keyboard)
-@export var Pause := true  ## Whether or not the player can use the Pause input to pause the game. (Normally Esc) (will be ON for final game.)
-@export var Reset := true ## Whether or not the player can use the Reset input to reset the player's position (Normally Ctrl+R) (will be OFF for final game.)
-@export var Quit := true ## Whether or not the player can use the Quit input to quit the game (Normally Ctrl+Shift+Q) (will be OFF for final game.)
+@export_group("Utility")
+@export var inventory_opened_in_air := false
+@export var speed: float
+@export var GAME_STATE := "NORMAL"
 
 
-@export_group("Visual") ## A group for visual/camera variables
+@export_group("Gameplay")
+
+@export_subgroup("Health")
+@export var UseHealth := true
+@export var MaxHealth := 100
+@export var Health := 100
+
+@export_subgroup("Other")
+@export var Position := Vector3(0, 0, 0)
+
+
+@export_group("Spawn")
+@export var StartPOS := Vector3(0, 0, 0)
+@export var ResetPOS := Vector3(0, 0, 0)
+
+@export_subgroup("Fade_In")
+@export var Fade_In := false
+@export var Fade_In_Time := 1.0
+
+
+@export_group("Input")
+@export var Pause := true
+@export var Reset := true
+@export var Quit := true
+
+
+@export_group("Visual")
 @export_subgroup("Camera")
-@export var FOV = 120
-@export_subgroup("Crosshair") ## A subgroup for crosshair variables.
-@export var crosshair_size = Vector2(12, 12) ## The size of the crosshair.
-
-@export_group("View Bobbing") ## a group for view bobbing variables.
+@export var FOV := 120.0
+@export_subgroup("Crosshair")
+@export var crosshair_size := Vector2(12, 12)
 
 
-@export var BOB_FREQ := 3.0 ## The frequency of the waves (how often it occurs)
-@export var BOB_AMP = 0.08 ## The amplitude of the waves (how much you actually go up and down)
-@export var BOB_SMOOTHING_SPEED := 3.0  ## Speed to smooth the return to the original position. The lower it get's, the smoother it is.
+@export_group("View Bobbing")
+@export var BOB_FREQ := 3.0
+@export var BOB_AMP := 0.08
+@export var BOB_SMOOTHING_SPEED := 3.0
 
-@export_subgroup("Other") ## a subgroup for other view bobbing variables.
-@export var Wave_Length = 0.0 ## The wavelength of the bobbing
 
-@export_group("Mouse") ## A group for mouse variables.
-@export var SENSITIVITY = 0.001 ## The sensitivity of the mouse when it is locked in the center (during gameplay)
+@export_group("Mouse")
+@export var SENSITIVITY := 0.001
 
-@export_group("Physics") ## A group for physics variables.
 
-@export_subgroup("Movement") ## A subgroup for movement variables.
-@export var WALK_SPEED = 5.0 ## The normal speed at which the player moves.
-@export var SPRINT_SPEED = 8.0 ## The speed of the player when the user is pressing/holding the Sprint input.
-@export var JUMP_VELOCITY = 4.5 ## How much velocity the player has when jumping. The more this value is, the higher the player can jump.
-@export_subgroup("Crouching") ## A subgroup for crouching variables.
-@export var CROUCH_JUMP_VELOCITY = 4.5 ## How much velocity the player has when jumping. The more this value is, the higher the player can jump.
-@export var CROUCH_SPEED := 3.0 ## The speed of the player when the user is pressing/holding the Crouch input.
-@export var CROUCH_INTERPOLATION := 6.0 ## How long it takes to go to the crouching stance or return to normal stance.
-@export_subgroup("Gravity") ## A subgroup for gravity variables.
-@export var gravity = 12.0 ## Was originally 9.8 (Earth's gravitational pull) but I felt it to be too unrealistic. This is the gravity of the player. The higher this value is, the faster the player falls.
+@export_group("Physics")
 
-# Body parts variables
-@onready var head = $Head # reference to the head of the player scene. (used for mouse movement and looking around)
-@onready var camera = $Head/Camera3D # reference to the camera of the player (used for mouse movement and looking around)
+@export_subgroup("Movement")
+@export var WALK_SPEED := 5.0
+@export var SPRINT_SPEED := 8.0
+@export var JUMP_VELOCITY := 4.5
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-func _input(_event): # A built-in function that listens for input using the input map
-	if Input.is_action_just_pressed("Quit") and Quit == true:
-		get_tree().quit() # quit
-	if Input.is_action_just_pressed("Reset") and Reset == true:
+@export_subgroup("Crouching")
+@export var CROUCH_JUMP_VELOCITY := 4.5
+@export var CROUCH_SPEED := 3.0
+@export var CROUCH_INTERPOLATION := 6.0
+
+@export_subgroup("Gravity")
+@export var gravity := 12.0
+
+
+@export_group("Slide")
+@export var SLIDE_START_SPEED := 10.0
+@export var SLIDE_MIN_SPEED := 4.0
+@export var SLIDE_MAX_TIME := 0.85
+@export var SLIDE_FRICTION := 12.0
+@export var SLIDE_STEER := 5.0
+@export var SLIDE_HOP_BOOST := 1.05
+
+
+@onready var head: Node3D = $Head
+@onready var camera: Camera3D = $Head/Camera3D
+@onready var crosshair: Control = $Head/Camera3D/CrosshairCanvas/Crosshair
+
+
+var wave_length := 0.0
+var camera_base_pos := Vector3.ZERO
+
+var was_on_floor := false
+
+var is_sliding := false
+var slide_time := 0.0
+var slide_speed := 0.0
+var slide_dir := Vector3.ZERO
+
+
+func _ready() -> void:
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	camera_base_pos = camera.position
+
+
+func _input(_event: InputEvent) -> void:
+	if Quit and Input.is_action_just_pressed("Quit"):
+		get_tree().quit()
+	if Reset and Input.is_action_just_pressed("Reset"):
 		if ResetPOS == Vector3(999, 999, 999):
-			self.position = StartPOS
+			position = StartPOS
 		else:
-			self.position = ResetPOS
+			position = ResetPOS
 
-func _unhandled_input(event):
+
+func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
 		head.rotate_y(-event.relative.x * SENSITIVITY)
 		camera.rotate_x(-event.relative.y * SENSITIVITY)
 		camera.rotation.x = clamp(camera.rotation.x, deg_to_rad(-90), deg_to_rad(90))
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-# Modify _physics_process to include smooth transition when not moving
-func _physics_process(delta): # This is a special function that is called every frame. It is used for physics calculations. For example, if I run the game on a computer that has a higher/lower frame rate, the physics will still be consistent.
-	
-	# Crouching
-	if GAME_STATE != "DEAD" and is_on_floor(): # Check if the game state is not inventory or dead and if the player is on the floor
-		if Input.is_action_pressed("Crouch"): # Check if the Crouch input is pressed
-			self.scale.y = lerp(self.scale.y, 0.5, CROUCH_INTERPOLATION * delta) # linearly interpolate the scale of the player on the y-axis to 0.5
-		else: 
-			self.scale.y = lerp(self.scale.y, 1.0, CROUCH_INTERPOLATION * delta) # linearly interpolate the scale of the player on the y-axis to 1.0
+
+func _physics_process(delta: float) -> void:
+	var on_floor := is_on_floor()
+	var input_vec := Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
+	var wish_dir := (head.transform.basis * Vector3(input_vec.x, 0.0, input_vec.y)).normalized()
+	var horizontal_speed := Vector3(velocity.x, 0.0, velocity.z).length()
+
+	_update_crouch_scale(delta)
+
+	if GAME_STATE == "DEAD":
+		_stop_slide()
+		velocity.x = lerp(velocity.x, 0.0, delta * 10.0)
+		velocity.z = lerp(velocity.z, 0.0, delta * 10.0)
+		move_and_slide()
+		_update_view_bob(delta)
+		was_on_floor = on_floor
+		return
+
+	if not on_floor:
+		velocity.y -= gravity * delta
+
+	if is_sliding and (not on_floor or Input.is_action_just_pressed("Jump")):
+		if Input.is_action_just_pressed("Jump"):
+			var boosted = max(horizontal_speed, SLIDE_MIN_SPEED) * SLIDE_HOP_BOOST
+			velocity.y = JUMP_VELOCITY
+			velocity.x = slide_dir.x * boosted
+			velocity.z = slide_dir.z * boosted
+		_stop_slide()
+
+	if on_floor and (not is_sliding) and Input.is_action_just_pressed("Jump") and (not Input.is_action_pressed("Crouch")):
+		velocity.y = JUMP_VELOCITY
+
+	if on_floor and (not was_on_floor) and (not is_sliding):
+		if Input.is_action_pressed("Crouch") and Input.is_action_pressed("Sprint") and wish_dir != Vector3.ZERO:
+			_start_slide(wish_dir, max(horizontal_speed, SPRINT_SPEED))
+
+	if on_floor and (not is_sliding):
+		if Input.is_action_just_pressed("Crouch") and Input.is_action_pressed("Sprint") and wish_dir != Vector3.ZERO and horizontal_speed > WALK_SPEED:
+			_start_slide(wish_dir, max(horizontal_speed, SLIDE_START_SPEED))
+
+	if is_sliding:
+		_update_slide(delta, wish_dir)
 	else:
-		self.scale.y = lerp(self.scale.y, 1.0, CROUCH_INTERPOLATION * delta) # linearly interpolate the scale of the player on the y-axis to 1.0
-	
-	
-	if !GAME_STATE == "DEAD":
-		# Always apply gravity unless game state is DEAD
-		if not is_on_floor(): # Check if the player is not on the floor
-			velocity.y -= gravity * delta # apply gravity to the player
+		_update_walk(delta, wish_dir, on_floor)
+
+	move_and_slide()
+	_update_view_bob(delta)
+	was_on_floor = is_on_floor()
 
 
-		# Jumping
-		if Input.is_action_just_pressed("Jump") and is_on_floor() and !Input.is_action_pressed("Crouch"): # Check if the Jump input is pressed, the player is on the floor and the Crouch input is not pressed
-			velocity.y = JUMP_VELOCITY # set the player's velocity to the jump velocity
+func _update_walk(delta: float, wish_dir: Vector3, on_floor: bool) -> void:
+	if Input.is_action_pressed("Sprint") and (not Input.is_action_pressed("Crouch")):
+		speed = SPRINT_SPEED
+	elif Input.is_action_pressed("Crouch"):
+		speed = CROUCH_SPEED
+	else:
+		speed = WALK_SPEED
 
-		# Handle Speed
-		if Input.is_action_pressed("Sprint") and !Input.is_action_pressed("Crouch"): # Check if the Sprint input is pressed and the Crouch input is not pressed
-			speed = SPRINT_SPEED # set the speed to the sprint speed
-		elif Input.is_action_pressed("Crouch"): # Check if the Crouch input is pressed
-			speed = CROUCH_SPEED # set the speed to the crouch speed
-		else: 
-			speed = WALK_SPEED # set the speed to the walk speed
-		
-
-		# Movement
-		var input_dir = Input.get_vector("move_left", "move_right", "move_forward", "move_backward") # get the input direction
-		var direction = (head.transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized() # get the direction of the player
-
-		if is_on_floor(): # Check if the player is on the floor
-			if direction != Vector3.ZERO: # Check if the direction is not zero
-				velocity.x = direction.x * speed # set the player's velocity on the x-axis to the direction times the speed
-				velocity.z = direction.z * speed # set the player's velocity on the z-axis to the direction times the speed
-			else:
-				velocity.x = lerp(velocity.x, 0.0, delta * 10.0) # linearly interpolate the player's velocity on the x-axis to 0
-				velocity.z = lerp(velocity.z, 0.0, delta * 10.0) # linearly interpolate the player's velocity on the z-axis to 0
+	if on_floor:
+		if wish_dir != Vector3.ZERO:
+			velocity.x = wish_dir.x * speed
+			velocity.z = wish_dir.z * speed
 		else:
-			velocity.x = lerp(velocity.x, direction.x * speed, delta * 3.0) # linearly interpolate the player's velocity on the x-axis to the direction times the speed
-			velocity.z = lerp(velocity.z, direction.z * speed, delta * 3.0) # linearly interpolate the player's velocity on the z-axis to the direction times the speed
-
-		
-		move_and_slide() # Apply gravity and handle movement
-
-		# Check if the player is moving and on the floor
-		var is_moving = velocity.length() > 0.1 and is_on_floor()
-
-		# Apply view bobbing only if the player is moving
-		if is_moving:
-			Wave_Length += delta * velocity.length() # Increase the wave length based on the player's velocity
-			camera.transform.origin = _headbob(Wave_Length) # Apply the headbob function to the camera's origin
-		else:
-			# Smoothly return to original position when not moving
-			var target_pos = Vector3(camera.transform.origin.x, 0, camera.transform.origin.z) # get the target position
-			camera.transform.origin = camera.transform.origin.lerp(target_pos, delta * BOB_SMOOTHING_SPEED) # linearly interpolate the camera's origin to the target position
-
-func _headbob(time) -> Vector3:
-	var pos = Vector3.ZERO
-	pos.y = sin(time * BOB_FREQ) * BOB_AMP
-	return pos
-func _process(_delta): # called every frame.
-	
-	$Head/Camera3D.fov = FOV # set FOV to export value
-	
-	$Head/Camera3D/CrosshairCanvas/Crosshair.size = crosshair_size # set crosshair size the the export value
+			velocity.x = lerp(velocity.x, 0.0, delta * 10.0)
+			velocity.z = lerp(velocity.z, 0.0, delta * 10.0)
+	else:
+		velocity.x = lerp(velocity.x, wish_dir.x * speed, delta * 3.0)
+		velocity.z = lerp(velocity.z, wish_dir.z * speed, delta * 3.0)
 
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-func _ready(): # called when node enters scene tree, i.e when it has fully loaded
-	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)  # lock mouse
+func _start_slide(dir: Vector3, start_speed: float) -> void:
+	is_sliding = true
+	slide_time = 0.0
+	slide_dir = dir
+	slide_speed = max(start_speed, SLIDE_START_SPEED)
+	velocity.x = slide_dir.x * slide_speed
+	velocity.z = slide_dir.z * slide_speed
+
+
+func _stop_slide() -> void:
+	is_sliding = false
+	slide_time = 0.0
+	slide_speed = 0.0
+	slide_dir = Vector3.ZERO
+
+
+func _update_slide(delta: float, wish_dir: Vector3) -> void:
+	slide_time += delta
+
+	if wish_dir != Vector3.ZERO:
+		slide_dir = slide_dir.slerp(wish_dir, clamp(delta * SLIDE_STEER, 0.0, 1.0)).normalized()
+
+	slide_speed = max(slide_speed - (SLIDE_FRICTION * delta), 0.0)
+	velocity.x = slide_dir.x * slide_speed
+	velocity.z = slide_dir.z * slide_speed
+
+	if (not Input.is_action_pressed("Crouch")) or slide_speed < SLIDE_MIN_SPEED or slide_time >= SLIDE_MAX_TIME:
+		_stop_slide()
+
+
+func _update_crouch_scale(delta: float) -> void:
+	var target := 1.0
+	if Input.is_action_pressed("Crouch") or is_sliding:
+		target = 0.5
+	scale.y = lerp(scale.y, target, CROUCH_INTERPOLATION * delta)
+
+
+func _update_view_bob(delta: float) -> void:
+	var h_speed := Vector3(velocity.x, 0.0, velocity.z).length()
+	var moving := is_on_floor() and h_speed > 0.1
+
+	if moving:
+		wave_length += delta * h_speed
+		camera.position = camera_base_pos + _headbob(wave_length)
+	else:
+		camera.position = camera.position.lerp(camera_base_pos, delta * BOB_SMOOTHING_SPEED)
+
+
+func _headbob(time: float) -> Vector3:
+	return Vector3(0.0, sin(time * BOB_FREQ) * BOB_AMP, 0.0)
+
+
+func _process(_delta: float) -> void:
+	camera.fov = FOV
+	crosshair.size = crosshair_size
