@@ -8,12 +8,16 @@
 
 config_version=5
 
+[animation]
+
+compatibility/default_parent_skeleton_in_mesh_instance_3d=true
+
 [application]
 
 config/name="Expland Player Character"
 config/tags=PackedStringArray("3d", "for_school")
 run/main_scene="res://Scenes and Scripts/world.tscn"
-config/features=PackedStringArray("4.5", "Forward Plus")
+config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://Textures/icon.png"
 
 [display]
